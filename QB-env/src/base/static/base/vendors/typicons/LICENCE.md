@@ -1,3 +1,9 @@
+---
+noteId: "8c47b1208a7811ecb4365109ed8cf28b"
+tags: []
+
+---
+
 Copyright (c) 2014, Stephen Hutchings (http://www.s-ings.com/).
 
 This Font Software is licensed under the SIL Open Font License, Version 1.1.

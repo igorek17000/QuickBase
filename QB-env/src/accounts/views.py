@@ -32,3 +32,14 @@ def signup(request):
             return render (request,'registration/signup.html', {'error':'Mots de passe différents!'})
     else:
         return render(request,'registration/signup.html')
+
+
+
+
+def account(request):
+    context = {
+
+    }
+    return render(request, 'accounts/account.html', context)
+
+

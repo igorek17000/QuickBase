@@ -1,3 +1,9 @@
+---
+noteId: "8c442eb08a7811ecb4365109ed8cf28b"
+tags: []
+
+---
+
 # TinyMCE
 
 TinyMCE is the world’s most popular open source web-based WYSIWYG editor.
