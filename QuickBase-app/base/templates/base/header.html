@@ -208,7 +208,7 @@
             <li class="nav-item">
               <a class="nav-link" href="http://bootstrapdash.com/demo/star-admin2-free/docs/documentation.html">
                 <i class="menu-icon mdi mdi-calculator"></i>
-                <span class="menu-title">convertion</span>
+                <span class="menu-title">conversion</span>
               </a>
             </li>
             <li class="nav-item">
@@ -228,7 +228,7 @@
         </nav>
         <!-- partial -->
         <div class="main-panel">
-          {% block body %}Default Body{% endblock %}
+          {% block body %}{% block navsecond %}{% endblock %}{% endblock %}
           <!-- content-wrapper ends -->
           <!-- partial:partials/_footer.html -->
           <footer class="footer">
