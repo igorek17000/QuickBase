@@ -139,7 +139,7 @@
                   <p class="mb-1 mt-3 font-weight-semibold">{{ user.username }}</p>
                   <p class="fw-light text-muted mb-0">{{ user.email }}</p>
                 </div>
-                <a class="dropdown-item" href="/accounts/account"><i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> Mon compte <span class="badge badge-pill badge-danger">1</span></a>
+                <a class="dropdown-item" href="/accounts/myaccount"><i class="dropdown-item-icon mdi mdi-account-outline text-primary me-2"></i> Mon compte <span class="badge badge-pill badge-danger">1</span></a>
                 <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-message-text-outline text-primary me-2"></i> Messages</a>
                 <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary me-2"></i> Activités </a>
                 <a class="dropdown-item"><i class="dropdown-item-icon mdi mdi-help-circle-outline text-primary me-2"></i> FAQ</a>
@@ -237,7 +237,7 @@
         </nav>
         <!-- partial -->
         <div class="main-panel">
-          {% block body %}{% block navsecond %}{% endblock %}{% endblock %}
+          {% block body %}{% endblock %}
           <!-- content-wrapper ends -->
           <!-- partial:partials/_footer.html -->
           <footer class="footer">

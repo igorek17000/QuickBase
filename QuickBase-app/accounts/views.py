@@ -32,3 +32,9 @@ def signup(request):
             return render (request,'registration/signup.html', {'error':'Mots de passe différents!'})
     else:
         return render(request,'registration/signup.html')
+
+def myaccount(request):
+    if not request.user.is_authenticated:
+        return redirect('/accounts/login')
+    else :
+        return render(request, 'accounts/account.html')
