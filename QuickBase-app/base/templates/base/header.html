@@ -178,10 +178,19 @@
         <nav class="sidebar sidebar-offcanvas" id="sidebar">
           <ul class="nav">
             <li class="nav-item">
-              <a class="nav-link" href="index.html">
-                <i class="mdi mdi-grid-large menu-icon"></i>
-                <span class="menu-title">Dashboard</span>
+              <a class="nav-link" data-bs-toggle="collapse" href="#dashboard-menu" aria-expanded="false" aria-controls="dashboard-menu">
+                <i class="menu-icon mdi mdi mdi-wallet"></i>
+                <span class="menu-title">Tableau de bord</span>
+                <i class="menu-arrow"></i> 
               </a>
+              <div class="collapse" id="dashboard-menu">
+                <ul class="nav flex-column sub-menu">
+                  <li class="nav-item"> <a class="nav-link" href="/dashboard/overview">Vue d'ensemble</a></li>
+                  <li class="nav-item"> <a class="nav-link" href="/dashboard/transactions">Mes Transactions</a></li>
+                  <li class="nav-item"> <a class="nav-link" href="/dashboard/trades">Trades et Positions</a></li>
+                  <li class="nav-item"> <a class="nav-link" href="/dashboard/marche">L'ensemble des Marchés</a></li>
+                </ul>
+              </div>
             </li>
             <li class="nav-item nav-category">portfolio</li>
             <li class="nav-item">
