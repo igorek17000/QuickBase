@@ -14,6 +14,7 @@
 
 {% block body %}
 <div class="content-wrapper">
+  <form class="forms-sample" method = "POST" action="{% url 'myaccount' %}">
     <div class="row">
       <div class="col-md-6 grid-margin stretch-card">
         <div class="card">
@@ -22,32 +23,25 @@
             <p class="card-description">
               Mon compte
             </p>
-            <form class="forms-sample">
+            
+              {% csrf_token %}
               <div class="form-group">
-                <label for="exampleInputUsername1">Username</label>
-                <input type="text" class="form-control" id="exampleInputUsername1" placeholder="Username">
-              </div>
-              <div class="form-group">
-                <label for="exampleInputEmail1">Email address</label>
-                <input type="email" class="form-control" id="exampleInputEmail1" placeholder="Email">
+                <label for="exampleInputUsername1">Nom d'utilisateur</label>
+                <input type="text" class="form-control" required="required" name="username" id="exampleInputUsername1" value={{ username }} placeholder={{ username }}>
               </div>
               <div class="form-group">
-                <label for="exampleInputPassword1">Password</label>
-                <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+                <label for="exampleInputEmail1">Adresse e-mail</label>
+                <input type="email" class="form-control" required="required" name="email" id="exampleInputEmail1" value={{ email }} placeholder={{ email }}>
               </div>
               <div class="form-group">
-                <label for="exampleInputConfirmPassword1">Confirm Password</label>
-                <input type="password" class="form-control" id="exampleInputConfirmPassword1" placeholder="Password">
+                <label for="exampleInputPassword1">Nouveau mot de passe</label>
+                <input type="password" name="password1" class="form-control" id="exampleInputPassword1" placeholder="Nouveau mot de passe">
               </div>
-              <div class="form-check form-check-flat form-check-primary">
-                <label class="form-check-label">
-                  <input type="checkbox" class="form-check-input">
-                  Remember me
-                </label>
+              <div class="form-group">
+                <label for="exampleInputConfirmPassword1">Confirmer le nouveau mot de passe</label>
+                <input type="password" name="password2" class="form-control" id="exampleInputConfirmPassword1" placeholder="Confirmer le nouveau mot de passe">
               </div>
-              <button type="submit" class="btn btn-primary me-2">Submit</button>
-              <button class="btn btn-light">Cancel</button>
-            </form>
+              
           </div>
         </div>
       </div>
@@ -56,43 +50,52 @@
           <div class="card-body">
             <h4 class="card-title">Mes connections externes</h4>
             <p class="card-description">
-              Clés API
+              API
             </p>
-            <hr>
-            <form class="forms-sample">
               <img class="img-sm rounded-10" src="../../static/base/images/exchange/ftx_logo-freelogovectors.net_.png" alt="profile">
               <div class="form-group">
                 <label for="exampleInputUsername1">Clé API</label>
-                <input type="text" class="form-control" id="exampleInputUsername1" placeholder="Clé API">
+                {% if FTXKey == 0 %}
+                <input type="text" class="form-control" min=40 name="APIKey"placeholder="API Key">
+                {% else %}
+                <input type="text" class="form-control" min=40 name="APIKey" value={{ FTXKey }}>
+                {% endif %}
               </div>
               <div class="form-group">
                 <label for="exampleInputEmail1">API Secret</label>
-                <input type="password" class="form-control" id="exampleInputPassword1" placeholder="API Secret">
+                {% if FTXKey == 0 %}
+                <input type="password" class="form-control" name="APISecret" placeholder="API Secret">
+                {% else %}
+                <input type="password" class="form-control" name="APISecret" value={{ FTXSecret }}>
+                {% endif %}
               </div>
-            </form>
-            <hr>
-            <form class="forms-sample">
-              <div class="form-group">
-                <label for="exampleInputPassword1">Password</label>
-                <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
-              </div>
-              <div class="form-group">
-                <label for="exampleInputConfirmPassword1">Confirm Password</label>
-                <input type="password" class="form-control" id="exampleInputConfirmPassword1" placeholder="Password">
-              </div>
-              <div class="form-check form-check-flat form-check-primary">
-                <label class="form-check-label">
-                  <input type="checkbox" class="form-check-input">
-                  Remember me
-                </label>
-              </div>
-              <button type="submit" class="btn btn-primary me-2">Submit</button>
-              <button class="btn btn-light">Cancel</button>
-            </form>
+              <hr>
           </div>
         </div>
       </div>
     </div>
+    <div class="row justify-content-center">
+      <div class="col-md-4 stretch-card">
+        <div class="card">
+          <div class="card-body">
+            <div class="form-group">
+              <label for="exampleInputPassword1">Mot de passe</label>
+              <input type="password" name="password3" required="required" class="form-control" id="exampleInputPassword1" placeholder="Mot de passe">
+            </div>
+              <div class="d-flex justify-content-center">
+                <button type="submit" class="btn btn-primary me-2">Sauvegarder</button>
+              </div>
+              <div class="d-flex justify-content-center">
+                <a href="/accounts/myaccount" class="btn btn-light">Annuler</a>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+      
+  </form>
+    
   </div>
 
 
