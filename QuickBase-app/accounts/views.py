@@ -30,34 +30,32 @@ def signup(request):
                     User.objects.get(username = request.POST['username'])
                     return render (request,'registration/signup.html', {'status':"Nom d'utilisateur déjà utilisé!"})
                 except User.DoesNotExist:
-                    user = User.objects.create_user(username =request.POST['username'],email=request.POST['email'],password=request.POST['password1'])
-                    auth.login(request,user)
-                    return redirect('/')
+                    request.session['username'] = request.POST['username']
+                    request.session['email'] = request.POST['email']
+                    request.session['password'] = request.POST['password1']
+                    return render(request,'registration/validation.html', {'status':0})
         else:
-            return render (request,'registration/signup.html', {'status':'Mots de passe différents!'})
+            return render (request,'registration/signup.html', {'status':"Mot de passe différent!"})
     else:
         return render(request,'registration/signup.html', {'status':0})
+
+def validation(request):
+    if request.method == "POST":    
+        try:
+            user = User.objects.create_user(username =request.session['username'],email=request.session['email'],password=request.session['password'])
+            auth.login(request,user)
+            return redirect('/')
+        except:
+            return render(request,'registration/validation.html', {'status':"Erreur création utilisateur"})
+    else:
+        return render(request,'registration/validation.html', {'status':0})
+    
 
 def myaccount(request):
     if not request.user.is_authenticated:
         return redirect('/accounts/login')
     else :
         if request.method == "POST":
-            try:
-                APIKey.objects.get(user = request.user,exchange = 'FTX')
-                APIFTX = APIKey.objects.filter(user = request.user,exchange = 'FTX')
-                FTXKey = APIFTX[0].apiKey
-                FTXSecret = APIFTX[0].apiKeySecret
-            except APIKey.DoesNotExist:
-                FTXKey = 0
-                FTXSecret = 0
-            try:
-                username= request.user.username
-                email= request.user.email
-            except:
-                username = "nom d'utilisateur"
-                email = "Email"
-
             if check_password(request.POST['password3'], request.user.password):
                 try:
                     if request.POST['password1']:
@@ -67,9 +65,13 @@ def myaccount(request):
                             U.set_password(request.POST['password1'])
                             U.save()
                         else :
-                            print("mdp différents")
+                            FTXKey,FTXSecret,username,email = ReloadInfo(request)
+                     
                             return render (request,'accounts/account.html', {'FTXKey':FTXKey,'FTXSecret':FTXSecret,'username':username,'email':email,'error':'Mots de passe différents!','status':1})
+                    else:
+                        User.objects.filter(username=request.user.username,email=request.user.email).update(username=request.POST['username'],email = request.POST['email'])
                 except:
+                    FTXKey,FTXSecret,username,email = ReloadInfo(request)
                     return render (request,'accounts/account.html', {'FTXKey':FTXKey,'FTXSecret':FTXSecret,'username':username,'email':email,'error':'Impossible de modifier les infos!','status':1})
                 
                 if request.POST['APIKey'] or request.POST['APISecret']:
@@ -77,37 +79,44 @@ def myaccount(request):
                         APIKey.objects.get(user = request.user)
                         APIKey.objects.get(exchange = 'FTX')
                         APIKey.objects.filter(user=request.user,exchange = 'FTX').update(apiKey=request.POST['APIKey'],apiKeySecret = request.POST['APISecret'])
-                        return render (request,'accounts/account.html', {'success':'Clé API modifiée','status':0})
+                        FTXKey,FTXSecret,username,email = ReloadInfo(request)
+                        return render (request,'accounts/account.html', {'FTXKey':FTXKey,'FTXSecret':FTXSecret,'username':username,'email':email,'success':'Clé API modifiée','status':0})
                     except APIKey.DoesNotExist:
                         try:
                             apiKey = APIKey(exchange = 'FTX',apiKey=request.POST['APIKey'],apiKeySecret = request.POST['APISecret'],user=request.user)
                             apiKey.save()
-                            #return redirect('overview')
-                            return render (request,'accounts/account.html',{'success':'Clé API ajouté','status':0})
+
+                            FTXKey,FTXSecret,username,email = ReloadInfo(request)
+                            return render (request,'accounts/account.html',{'FTXKey':FTXKey,'FTXSecret':FTXSecret,'username':username,'email':email,'success':'Clé API ajouté','status':0})
                         except:
-                            return render (request, 'accounts/account.html',{'error':'Erreur lors de la clé API','status':1})
+                            FTXKey,FTXSecret,username,email = ReloadInfo(request)
+                            return render (request, 'accounts/account.html',{'FTXKey':FTXKey,'FTXSecret':FTXSecret,'username':username,'email':email,'error':'Erreur lors de la clé API','status':1})
 
                 else:
-                    return render (request,'accounts/account.html',{'success':'Informations modifées','status':0})
+                    FTXKey,FTXSecret,username,email = ReloadInfo(request)
+                    return render (request,'accounts/account.html',{'FTXKey':FTXKey,'FTXSecret':FTXSecret,'username':username,'email':email,'success':'Informations modifées','status':0})
             else:
+                FTXKey,FTXSecret,username,email = ReloadInfo(request)
                 return render(request, 'accounts/account.html',{'FTXKey':FTXKey,'FTXSecret':FTXSecret,'username':username,'email':email,'error':'Mot de passe incorrect','status':1})
 
         else:
-            try:
-                APIKey.objects.get(user = request.user,exchange = 'FTX')
-                APIFTX = APIKey.objects.filter(user = request.user,exchange = 'FTX')
-                FTXKey = APIFTX[0].apiKey
-                FTXSecret = APIFTX[0].apiKeySecret
-            except APIKey.DoesNotExist:
-                FTXKey = 0
-                FTXSecret = 0
-
-            try:
-                username= request.user.username
-                email= request.user.email
-            except:
-                username = "nom d'utilisateur"
-                email = "Email"
-
+            FTXKey,FTXSecret,username,email = ReloadInfo(request)
             return render(request, 'accounts/account.html',{'FTXKey':FTXKey,'FTXSecret':FTXSecret,'username':username,'email':email,'status':0})
 
+def ReloadInfo(request):
+    try:
+        APIKey.objects.get(user = request.user,exchange = 'FTX')
+        APIFTX = APIKey.objects.filter(user = request.user,exchange = 'FTX')
+        FTXKey = APIFTX[0].apiKey
+        FTXSecret = APIFTX[0].apiKeySecret
+    except APIKey.DoesNotExist:
+        FTXKey = 0
+        FTXSecret = 0
+    try:
+        username= request.user.username
+        email= request.user.email
+    except:
+        username = "nom d'utilisateur"
+        email = "Email"
+
+    return FTXKey,FTXSecret,username,email
