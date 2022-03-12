@@ -26,3 +26,7 @@ class modifyAccount():
         if commit:
             APIKey.save()
         return APIKey
+
+class validation():
+    class Meta:
+        fields = ("code")
