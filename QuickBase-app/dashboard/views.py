@@ -13,20 +13,21 @@ def base(request):
             APIFTX = APIKey.objects.filter(user = request.user,exchange = 'FTX')
             FTXKey = APIFTX[0].apiKey
             FTXSecret = APIFTX[0].apiKeySecret
+            try:
+                account = FtxClient(FTXKey,FTXSecret)
+            except:
+                return render(request,'dashboard/dashboard.html', {'status':1,'error':'Impossible de se connecter à FTX','description':'Veuillez vérifier les informations API'})
+
+            #info dashboard
+            infos,maxCoin, minCoin = get_dashboard_info_usd(account)
+
+            #info menu
+            subaccounts = get_dashboard_menu_info(account)
+            return render(request,'dashboard/dashboard.html', {'status':0,'infos':infos,'subaccounts':subaccounts,'maxCoin':maxCoin,'minCoin':minCoin})
         except:
             return render(request,'dashboard/dashboard.html', {'status':1,'error':'Veuillez vérifier vos clés API'})
 
-        try:
-            account = FtxClient(FTXKey,FTXSecret)
-        except:
-            return render(request,'dashboard/dashboard.html', {'status':1,'error':'Impossible de se connecter à FTX','description':'Veuillez vérifier les informations API'})
-
-        #info dashboard
-        infos,maxCoin, minCoin = get_dashboard_info_usd(account)
-
-        #info menu
-        subaccounts = get_dashboard_menu_info(account)
-        return render(request,'dashboard/dashboard.html', {'status':0,'infos':infos,'subaccounts':subaccounts,'maxCoin':maxCoin,'minCoin':minCoin})
+        
 
 def get_dashboard_info_usd(account):
     infos = {}
@@ -76,23 +77,24 @@ def get_dashboard_info_eur(request):
             APIFTX = APIKey.objects.filter(user = request.user,exchange = 'FTX')
             FTXKey = APIFTX[0].apiKey
             FTXSecret = APIFTX[0].apiKeySecret
+            try:
+                account = FtxClient(FTXKey,FTXSecret)
+            except:
+                return render(request,'dashboard/dashboard.html', {'status':1,'error':'Impossible de se connecter à FTX','description':'Veuillez vérifier les informations API'})
+            
+            #info dashboard
+            infos,maxCoin, minCoin = get_dashboard_info_usd(account)
+
+            #convert
+            infos,maxCoin, minCoin = convert_USD_to_EUR(infos,maxCoin,minCoin)
+
+            #info menu
+            subaccounts = get_dashboard_menu_info(account)
+            return render(request,'dashboard/dashboard.html', {'status':0,'infos':infos,'subaccounts':subaccounts,'maxCoin':maxCoin,'minCoin':minCoin})
         except:
             return render(request,'dashboard/dashboard.html', {'status':1,'error':'Veuillez vérifier vos clés API'})
 
-        try:
-            account = FtxClient(FTXKey,FTXSecret)
-        except:
-            return render(request,'dashboard/dashboard.html', {'status':1,'error':'Impossible de se connecter à FTX','description':'Veuillez vérifier les informations API'})
         
-        #info dashboard
-        infos,maxCoin, minCoin = get_dashboard_info_usd(account)
-
-        #convert
-        infos,maxCoin, minCoin = convert_USD_to_EUR(infos,maxCoin,minCoin)
-
-        #info menu
-        subaccounts = get_dashboard_menu_info(account)
-        return render(request,'dashboard/dashboard.html', {'status':0,'infos':infos,'subaccounts':subaccounts,'maxCoin':maxCoin,'minCoin':minCoin})
 
 def marche(request):
     if not request.user.is_authenticated:

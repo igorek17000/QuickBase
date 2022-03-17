@@ -51,7 +51,6 @@
                     <select class="btn btn-otline-dark align-items-center" name="nyc">
                       <option value="ALL">Toutes les plateformes</option>
                       <option value="FTX">FTX</option>
-                      <option value="BIN">Binance</option>
                   </select>
                       <button type="submit" class="btn btn-primary text-white me-0"></i> Appliquer</button>
                   </form>
@@ -73,16 +72,6 @@
                           <h3 class="rate-percentage">{{ infos.total_profit }}{{ infos.devise }}</h3>
                           <p class="text-success d-flex"><i class="mdi mdi-menu-up"></i><span>+0.1%</span></p>
                         </div>
-                        <div>
-                          <p class="statistics-title">Coin avec la plus grande valeur</p>
-                          <h3 class="rate-percentage">{{ maxCoin.coin }}</h3>
-                          <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>{{ maxCoin.usdValue }}{{ infos.devise }}</span></p>
-                        </div>
-                        <div class="d-none d-md-block">
-                          <p class="statistics-title">Coin avec la plus basse valeur</p>
-                          <h3 class="rate-percentage">{{ minCoin.coin }}</h3>
-                          <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span>{{ minCoin.usdValue }}{{ infos.devise }}</span></p>
-                        </div>
                         <div class="d-none d-md-block">
                           <p class="statistics-title">Gainer</p>
                           <h3 class="rate-percentage">68.8</h3>
@@ -92,6 +81,16 @@
                           <p class="statistics-title">Looser</p>
                           <h3 class="rate-percentage">2m:35s</h3>
                           <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span>+0.8%</span></p>
+                        </div>
+                        <div>
+                          <p class="statistics-title">Coin avec la plus grande valeur</p>
+                          <h3 class="rate-percentage">{{ maxCoin.coin }}</h3>
+                          <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>{{ maxCoin.usdValue }}{{ infos.devise }}</span></p>
+                        </div>
+                        <div class="d-none d-md-block">
+                          <p class="statistics-title">Coin avec la plus basse valeur</p>
+                          <h3 class="rate-percentage">{{ minCoin.coin }}</h3>
+                          <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span>{{ minCoin.usdValue }}{{ infos.devise }}</span></p>
                         </div>
                       </div>
                     </div>
