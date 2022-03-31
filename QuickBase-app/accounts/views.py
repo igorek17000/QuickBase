@@ -96,8 +96,7 @@ def myaccount(request):
                 
                 if request.POST['APIKey'] or request.POST['APISecret']:
                     try:
-                        APIKey.objects.get(user = request.user)
-                        APIKey.objects.get(exchange = 'FTX')
+                        APIKey.objects.get(user = request.user,exchange = 'FTX')
                         APIKey.objects.filter(user=request.user,exchange = 'FTX').update(apiKey=request.POST['APIKey'],apiKeySecret = request.POST['APISecret'])
                         FTXKey,FTXSecret,username,email = ReloadInfo(request)
                         return render (request,'accounts/account.html', {'FTXKey':FTXKey,'FTXSecret':FTXSecret,'username':username,'email':email,'success':'Clé API modifiée','status':0})

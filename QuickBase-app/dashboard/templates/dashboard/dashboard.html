@@ -23,7 +23,8 @@
     {% endif %}
 
     {% if status == 0 %}
-    <div class="content-wrapper">
+    <div class="content-wrapper" >
+      {% csrf_token %}
         <div class="row">
           <div class="col-sm-12">
             <div class="home-tab">
@@ -64,12 +65,12 @@
                       <div class="statistics-details d-flex align-items-center justify-content-between">
                         <div>
                           <p class="statistics-title">Valeur total</p>
-                          <h3 class="rate-percentage">{{ infos.total_balance }}{{ infos.devise }} </h3>
-                          <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>-0.5€ (24h)</span></p>
+                          <h3 class="rate-percentage" id="balance">[[ balance.balance ]] [[ balance.devise ]] </h3>
+                          <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>{{ order }} (24h)</span></p>
                         </div>
                         <div>
                           <p class="statistics-title">Total des gains/pertes</p>
-                          <h3 class="rate-percentage">{{ infos.total_profit }}{{ infos.devise }}</h3>
+                          <h3 class="rate-percentage"  id="gain">[[ gain.gain ]] [[ gain.devise]]</h3>
                           <p class="text-success d-flex"><i class="mdi mdi-menu-up"></i><span>+0.1%</span></p>
                         </div>
                         <div class="d-none d-md-block">
@@ -82,15 +83,15 @@
                           <h3 class="rate-percentage">2m:35s</h3>
                           <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span>+0.8%</span></p>
                         </div>
-                        <div>
+                        <div class="d-none d-md-block" id="coinBiggest">
                           <p class="statistics-title">Coin avec la plus grande valeur</p>
-                          <h3 class="rate-percentage">{{ maxCoin.coin }}</h3>
-                          <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>{{ maxCoin.usdValue }}{{ infos.devise }}</span></p>
+                          <h3 class="rate-percentage" >[[ coinBiggest.coin ]]</h3>
+                          <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>[[ coinBiggest.value ]] [[ coinBiggest.devise ]]</span></p>
                         </div>
-                        <div class="d-none d-md-block">
-                          <p class="statistics-title">Coin avec la plus basse valeur</p>
-                          <h3 class="rate-percentage">{{ minCoin.coin }}</h3>
-                          <p class="text-success d-flex"><i class="mdi mdi-menu-down"></i><span>{{ minCoin.usdValue }}{{ infos.devise }}</span></p>
+                        <div class="d-none d-md-block" id="coinSmallest">
+                          <p class="statistics-title">Coin avec la plus petite valeur</p>
+                          <h3 class="rate-percentage" >[[ coinSmallest.coin ]]</h3>
+                          <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>[[ coinSmallest.value ]] [[ coinSmallest.devise ]]</span></p>
                         </div>
                       </div>
                     </div>
@@ -431,5 +432,68 @@
         </div>
       </div>
       {% endif %}
+<!-- vue:js -->
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
+<!-- axios:js -->
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+var balance = new Vue({
+  delimiters: ['[[', ']]'],
+  el: '#balance',
+  data () {
+      return{
+        balance: {},
+      }
+    },
+  mounted() {
+      axios
+        .get('/dashboard/api/get_total_usd_balance')
+        .then(response => (this.balance = response.data))
+  },
+})
+var gain = new Vue({
+  delimiters: ['[[', ']]'],
+  el: '#gain',
+  data () {
+      return{
+        gain: {},
+      }
+    },
+  mounted() {
+      axios
+        .get('/dashboard/api/get_gain_usd')
+        .then(response => (this.gain = response.data))
+  },
+})
+var coinBiggest = new Vue({
+  delimiters: ['[[', ']]'],
+  el: '#coinBiggest',
+  data () {
+      return{
+        coinBiggest: {},
+      }
+    },
+  mounted() {
+      axios
+        .get('/dashboard/api/get_biggest_coin_usd')
+        .then(response => (this.coinBiggest = response.data))
+  },
+})
+var coinSmallest = new Vue({
+  delimiters: ['[[', ']]'],
+  el: '#coinSmallest',
+  data () {
+      return{
+        coinSmallest: {},
+      }
+    },
+  mounted() {
+      axios
+        .get('/dashboard/api/get_smallest_coin_usd')
+        .then(response => (this.coinSmallest = response.data))
+  },
+})
+</script>
+
 
 {% endblock %}

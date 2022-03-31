@@ -4,11 +4,13 @@ from django.db import models
 import time
 import urllib.parse
 from typing import Optional, Dict, Any, List
+from datetime import date 
+from datetime import timedelta 
+import datetime
+
 
 from requests import Request, Session, Response
 import hmac
-
-
 
 class FtxClient:
     _ENDPOINT = 'https://ftx.com/api/'
@@ -97,9 +99,10 @@ class FtxClient:
         index=0
         i=0
         for coin in allBall:
-            if coin['usdValue']<minValue:
-                minValue=coin['usdValue']
-                index=i
+            if (coin['usdValue']>0.0):
+                if (coin['usdValue']<minValue):
+                    minValue=coin['usdValue']
+                    index=i
             i+=1
         return allBall[index]
 
@@ -361,6 +364,13 @@ class FtxClient:
                 t+=i['size']
         return t
 
+    def get_total_usd_deposit(self):
+        t=0.0
+        for i in self.get_deposit_history():
+            if (i['coin'] == 'USD') & (i['status']=='complete'):
+                t+=i['size']
+        return t
+
     def get_withdrawal_fee(self, coin: str, size: int, address: str, method: str = None, tag: str = None) -> Dict:
         return self._get('wallet/withdrawal_fee', {
             'coin': coin,
@@ -386,3 +396,29 @@ class FtxClient:
 
     def get_latency_stats(self, days: int = 1, subaccount_nickname: str = None) -> Dict:
         return self._get('stats/latency_stats', {'days': days, 'subaccount_nickname': subaccount_nickname})
+
+    def get_historical_balance(self):
+        return self._get(f'historical_balances/requests')
+
+    def get_historical_balance_id_main(self,id):
+        req = 'historical_balances/requests/'+str(id)
+        return self._get(req)
+
+    def post_yesterday_historical_balance(self):
+        yest = date.today()  - timedelta(days = 1)
+        timeSt = time.mktime(datetime.datetime.strptime(str(yest), "%Y-%m-%d").timetuple())
+        try : 
+            id = self._post('historical_balances/requests',{"accounts": ["main"],
+            "endTime": timeSt})
+        except:
+            self.post_yesterday_historical_balance()
+        return id
+
+    def post_historical_balance(self,date):
+        timeSt = time.mktime(datetime.datetime.strptime(str(date), "%Y-%m-%d").timetuple())
+        try : 
+            id = self._post('historical_balances/requests',{"accounts": ["main"],
+            "endTime": timeSt})
+        except:
+            self.get_past_post_historical_balanceday_balance_main()
+        return id
