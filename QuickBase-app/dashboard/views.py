@@ -174,8 +174,20 @@ def get_total_usd_balance(request):
     response={"balance":get_FTX_balance_usd(request),"devise":"$"}
     return JsonResponse(response)
 
+def get_total_eur_balance(request):
+    c = CurrencyConverter()
+    usdBalance = get_FTX_balance_usd(request)
+    response={"balance":round(c.convert(usdBalance,'USD','EUR'),2),"devise":"€"}
+    return JsonResponse(response)
+
 def get_gain_usd(request):
     response={"gain":get_FTX_gain_usd(request),"devise":"$"}
+    return JsonResponse(response)
+
+def get_gain_eur(request):
+    c = CurrencyConverter()
+    usdBalance = get_FTX_balance_usd(request)
+    response={"gain":round(c.convert(usdBalance,'USD','EUR'),2),"devise":"€"}
     return JsonResponse(response)
 
 def get_biggest_coin_usd(request):
@@ -183,21 +195,20 @@ def get_biggest_coin_usd(request):
     response = {"coin":coin,"value":value,"devise":"$"}
     return JsonResponse(response)
 
+def get_biggest_coin_eur(request):
+    c = CurrencyConverter()
+    coin,value = get_FTX_Biggest_coin_usd(request)
+    response = {"coin":coin,"value":round(c.convert(value,'USD','EUR'),2),"devise":"€"}
+    return JsonResponse(response)
+
 def get_smallest_coin_usd(request):
     coin,value = get_FTX_Smallest_coin_usd(request)
     response = {"coin":coin,"value":value,"devise":"$"}
     return JsonResponse(response)
 
-def get_total_eur_balance(request):
-    account = get_FTX_account(request)
-    infos = {}
-    infos['devise']='€'
-    infos['total_balance'] =round(account.get_total_usd_balance(),2)
+def get_smallest_coin_eur(request):
     c = CurrencyConverter()
-    for info in infos:
-        try:
-            infos[info] = round(c.convert(infos[info],'USD','EUR'),2)
-        except:
-            pass
-    return JsonResponse(infos)
+    coin,value = get_FTX_Smallest_coin_usd(request)
+    response = {"coin":coin,"value":round(c.convert(value,'USD','EUR'),2),"devise":"€"}
+    return JsonResponse(response)
 
