@@ -1,71 +1,24 @@
 from datetime import date, timedelta
 import datetime
 import time
-from urllib import response
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
-from dashboard.models import FtxClient
+from dashboard.models import FtxClient,CoinGeckoAPI
 from accounts.models import APIKey
 from currency_converter import CurrencyConverter
-
-
-# Views
-# def base(request):
-#     if not request.user.is_authenticated:
-#         return redirect('/accounts/login')
-#     else :
-#         try:
-#             keys = get_FTX_key(request)
-#             account = get_FTX_account(keys['FTXKey'],keys['FTXSecret'])
-#             #info dashboard
-#             infos,maxCoin, minCoin = get_dashboard_info_usd(account)
-
-#             #info menu
-#             subaccounts = get_dashboard_menu_info(account)
-#             return render(request,'dashboard/dashboard.html', {'status':0,'infos':infos,'subaccounts':subaccounts,'maxCoin':maxCoin,'minCoin':minCoin,'keys':keys})
-#         except Exception as e:
-#             print(e)
-#             return render(request,'dashboard/dashboard.html', {'status':1,'error':'Error serveur'})
+from datetime import datetime
 
 def base(request):
     if not request.user.is_authenticated:
         return redirect('/accounts/login')
     else :
-        return render(request,'dashboard/dashboard.html', {'status':0})
-
-def get_dashboard_info_eur(request):
-    if not request.user.is_authenticated:
-        return redirect('/accounts/login')
-    else :
-        try:
-            APIKey.objects.get(user = request.user,exchange = 'FTX')
-            APIFTX = APIKey.objects.filter(user = request.user,exchange = 'FTX')
-            FTXKey = APIFTX[0].apiKey
-            FTXSecret = APIFTX[0].apiKeySecret
-            try:
-                account = FtxClient(FTXKey,FTXSecret)
-            except:
-                return render(request,'dashboard/dashboard.html', {'status':1,'error':'Impossible de se connecter à FTX','description':'Veuillez vérifier les informations API'})
-            
-            #info dashboard
-            infos,maxCoin, minCoin = get_dashboard_info_usd(account)
-
-            #convert
-            infos,maxCoin, minCoin = convert_USD_to_EUR(infos,maxCoin,minCoin)
-
-            #info menu
-            subaccounts = get_dashboard_menu_info(account)
-            return render(request,'dashboard/dashboard.html', {'status':0,'infos':infos,'subaccounts':subaccounts,'maxCoin':maxCoin,'minCoin':minCoin})
-        except:
-            return render(request,'dashboard/dashboard.html', {'status':1,'error':'Veuillez vérifier vos clés API'})
-
-        
+        return render(request,'dashboard/dashboard.html', {'status':0})    
 
 def marche(request):
     if not request.user.is_authenticated:
         return redirect('/accounts/login')
     else :
-        return render(request, 'dashboard/marche.html')
+        return render(request, 'dashboard/marche.html', {'status':0})
 
 def transactions(request):
     if not request.user.is_authenticated:
@@ -128,46 +81,47 @@ def get_FTX_Smallest_coin_usd(request):
     big = account.get_smallest_balance()
     return big["coin"],round(big['usdValue'],2)
 
-def get_dashboard_info_usd(account):
-    infos = {}
-    infos['devise']='$'
-    infos['total_balance'] =round(account.get_total_usd_balance(),2)
-    c = CurrencyConverter()
-    infos['total_deposit'] = c.convert(account.get_total_eur_deposit(),'EUR','USD')
-    infos['total_profit'] = round(infos['total_balance'] - infos['total_deposit'],2)
-    maxCoin = account.get_biggest_balance()
-    maxCoin['usdValue'] = round(maxCoin['usdValue'],2)
-    minCoin = account.get_smallest_balance()
-    minCoin['usdValue'] = round(minCoin['usdValue'],2)
-
-    return infos,maxCoin,minCoin
-
 def get_dashboard_menu_info(account):
     subaccounts = account.get_all_subaccount()
     return subaccounts
 
-def convert_USD_to_EUR(infos,maxCoin,minCoin):
-    c = CurrencyConverter()
+def get_FTX_historical_balance(request,id):
+    account = get_FTX_account(request)
+    response = account.get_historical_balance_id_main(id)
+    count = 120
+    if (len(response['results'])==0) and (count!=0):
+        response = account.get_historical_balance_id_main(id)
+        count-=1
+        time.sleep(0.5)
+    else :
+        return response
 
-    for info in infos:
-        try:
-            infos[info] = round(c.convert(infos[info],'USD','EUR'),2)
-        except:
-            pass
-    infos['devise']='€'
-    for info in maxCoin:
-        try:
-            maxCoin[info] = round(c.convert(maxCoin[info],'USD','EUR'),2)
-        except:
-            pass
-    for info in minCoin:
-        try:
-            minCoin[info] = round(c.convert(minCoin[info],'USD','EUR'),2)
-        except:
-            pass
+def get_FTX_historical_balance_id_yesterday(request):
+    account = get_FTX_account(request)
+    response = account.get_historical_balance()
+    yest = date.today()  - timedelta(days = 2)
+    for i in response:
+        if i['endTime'][:10]==str(yest):
+            return i['id']
+    account.post_yesterday_historical_balance()
+    get_FTX_historical_balance_id_yesterday(request)
 
-    return infos,maxCoin,minCoin
+def get_FTX_historical_balance_usd(request,resp):
+    account = get_FTX_account(request)
+    accountValue = 0.0
+    yest = date.today()  - timedelta(days = 1)
+    timeSt= timeSt = time.mktime(datetime.datetime.strptime(str(yest), "%Y-%m-%d").timetuple())
+    counter=0
+    for i in resp['results']:
+        market = str(i['ticker']) + '/USD'
+        markets = account.get_historical_prices(market=market,end_time=timeSt,start_time=timeSt)
+        accountValue+=resp['results'][counter]['size']*markets[0]['open']
+        counter+=1
+    return round(accountValue,2)
 
+def test_get_data(request,value):
+    return JsonResponse({'msg' : value})
+    
 # API 
 
 def get_total_usd_balance(request):
@@ -186,7 +140,7 @@ def get_gain_usd(request):
 
 def get_gain_eur(request):
     c = CurrencyConverter()
-    usdBalance = get_FTX_balance_usd(request)
+    usdBalance = get_FTX_gain_usd(request)
     response={"gain":round(c.convert(usdBalance,'USD','EUR'),2),"devise":"€"}
     return JsonResponse(response)
 
@@ -211,4 +165,40 @@ def get_smallest_coin_eur(request):
     coin,value = get_FTX_Smallest_coin_usd(request)
     response = {"coin":coin,"value":round(c.convert(value,'USD','EUR'),2),"devise":"€"}
     return JsonResponse(response)
+
+def get_hitorical_balance_usd(request):
+    id = get_FTX_historical_balance_id_yesterday(request)
+    resp = get_FTX_historical_balance(request,id)
+    value = get_FTX_historical_balance_usd(request,resp)
+    return JsonResponse({'oldValue':value,'devise':'$'})
+
+def get_market_history(request,id,vs_currency,days,interval):
+    cg = CoinGeckoAPI()
+    req=cg.get_coin_market_chart_by_id(id=id,vs_currency=vs_currency,days=days,interval=interval)
+    for i in range(len(req['prices'])):
+        req['prices'][i][0]=datetime.fromtimestamp(int(str(req['prices'][i][0])[:-3]))
+    
+    prices = []
+    dates = []
+    volume = []
+    marketcap = []
+    for i in range(len(req['prices'])):
+        prices.append(req['prices'][i][1])
+        dates.append(req['prices'][i][0])
+        volume.append(req['total_volumes'][i][1])
+        marketcap.append(req['market_caps'][i][1])
+    return JsonResponse({'dates':dates,'prices':prices,'marketcap':marketcap,'volume':volume})
+
+def get_coins(request):
+    cg = CoinGeckoAPI()
+    req=cg.get_coins()
+    return JsonResponse({"coins":req})
+
+def get_vs_currency(request,id):
+    cg = CoinGeckoAPI()
+    req=cg.get_coin_by_id(id)
+    keys=[]
+    for key in req['market_data']['current_price']:
+        keys.append(key)
+    return JsonResponse({'vs_currency':keys})
 

@@ -29,17 +29,6 @@
           <div class="col-sm-12">
             <div class="home-tab">
               <div class="d-sm-flex align-items-center justify-content-between border-bottom">
-                <a class="nav-link ps-0" id="home-tab" data-bs-toggle="tab" href="#overview" aria-selected="false">Vue d'ensemble</a>
-                <div>
-                  <div class="btn-wrapper">
-                    {% if infos.devise == '$' %}
-                    <a href="/dashboard/overview/eur" class="btn btn-otline-dark align-items-center"><i class="mdi mdi-sync"></i>Changer de devise en EUR</a>
-                    {% endif %}
-                    {% if infos.devise == '€' %}
-                    <a href="/dashboard/overview" class="btn btn-otline-dark align-items-center"><i class="mdi mdi-sync"></i>Changer de devise en USD</a>
-                    {% endif %}
-                  </div>
-                </div>
                 <div>
                   <div class="btn-wrapper">
                     <form action="">
@@ -66,7 +55,8 @@
                         <div class="d-none d-md-block" id="balance" @click="change_devise">
                           <p class="statistics-title">Valeur total</p>
                           <h3 class="rate-percentage">[[ balance.balance ]] [[ balance.devise ]] </h3>
-                          <p class="text-danger d-flex"><i class="mdi mdi-menu-down"></i><span>(24h)</span></p>
+                          <p class="text-success d-flex" v-if="Variation >= 0"><i class="mdi mdi-menu-up"></i><span>+[[ Variation ]] [[ balanceVariation.devise ]] (24h)</span></p>
+                          <p class="text-danger d-flex" v-if="Variation < 0"><i class="mdi mdi-menu-down"></i><span>-[[ Variation ]] [[ balanceVariation.devise ]] (24h)</span></p>
                         </div>
                         <div class="d-none d-md-block" id="gain" @click="change_devise">
                           <p class="statistics-title" >Total des gains/pertes</p>
@@ -443,15 +433,31 @@ var balance = new Vue({
   data () {
       return{
         balance: {balance:"--"},
+        balanceVariation: {oldValue:0},
         dev : 'USD',
+        Variation:0,
       }
     },
-  mounted() {
-      axios
-        .get('/dashboard/api/get_total_usd_balance')
-        .then(response => (this.balance = response.data))
+  async mounted() {
+      await this.getBalance()
+      await this.getVariation()
+      await this.applyVariation()
   },
   methods: {
+    getBalance: async function(){
+      await axios
+        .get('/dashboard/api/get_total_usd_balance')
+        .then(response => (this.balance = response.data))
+    },
+    getVariation: async function(){
+      await axios
+        .get('/dashboard/api/get_hitorical_balance_usd')
+        .then(response => (this.balanceVariation = response.data))
+    },
+    applyVariation: async function(){
+      this.Variation = this.balance['balance'] - this.balanceVariation['oldValue']
+      this.Variation = this.Variation.toFixed(2)
+    },
     change_devise(){
       did = true
       this.balance = {balance:"--"}
