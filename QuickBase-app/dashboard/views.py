@@ -110,7 +110,7 @@ def get_FTX_historical_balance_usd(request,resp):
     account = get_FTX_account(request)
     accountValue = 0.0
     yest = date.today()  - timedelta(days = 1)
-    timeSt= timeSt = time.mktime(datetime.datetime.strptime(str(yest), "%Y-%m-%d").timetuple())
+    timeSt= timeSt = time.mktime(datetime.strptime(str(yest), "%Y-%m-%d").timetuple())
     counter=0
     for i in resp['results']:
         market = str(i['ticker']) + '/USD'
