@@ -19,4 +19,5 @@ urlpatterns = [
     path('api/get_market_history/<str:id>/<str:vs_currency>/<int:days>/<str:interval>', views.get_market_history, name='get_market_history'),
     path('api/get_coins', views.get_coins, name='get_coins'),
     path('api/get_vs_currency/<str:id>', views.get_vs_currency, name='get_vs_currency'),
+    path('api/get_coin_infos/<str:id>/<str:vs_currency>', views.get_coin_infos, name='get_coin_infos'),
 ]

@@ -202,3 +202,8 @@ def get_vs_currency(request,id):
         keys.append(key)
     return JsonResponse({'vs_currency':keys})
 
+def get_coin_infos(request,id, vs_currency):
+    cg = CoinGeckoAPI()
+    req=cg.get_coin_by_id(id)
+    return JsonResponse({'infos':req,'vs_currency':req['market_data']['current_price'][vs_currency]})
+
