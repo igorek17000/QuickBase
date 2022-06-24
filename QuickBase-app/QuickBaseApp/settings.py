@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'base',
     'accounts',
     'homepage',
+    'predictions',
 ]
 
 MIDDLEWARE = [

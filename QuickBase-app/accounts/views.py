@@ -174,11 +174,10 @@ def changePassword(request):
 def resendCode(request):
     sendCode(request.session['username'],request.session['email'],request.session['code'])
 
+
 def sendCode(username,email,code):
     import smtplib
-    from email.mime.multipart import MIMEMultipart
-    from email.mime.text import MIMEText
-    mail_content = '''
+    EMAIL_MESSAGE = '''
     Bonjour ''' +username + '''
 
     Nous avons reçu une demande non reconnue de connexion à votre compte depuis un nouvel emplacement en France.
@@ -196,24 +195,71 @@ def sendCode(username,email,code):
     QuickBase: https://quickbase-app.com
     '''
     #The mail addresses and password
-    sender_address = 'sup.quickbase.app@gmail.com'
-    sender_pass = 'momoleplusbo'
-    receiver_address = email
-    #Setup the MIME
-    message = MIMEMultipart()
-    message['From'] = sender_address
-    message['To'] = receiver_address
-    message['Subject'] = 'Your QuickBase verification code'   #The subject line
-    #The body and the attachments for the mail
-    message.attach(MIMEText(mail_content, 'plain'))
+    import smtplib
+
+    SMTP_SERVER = "smtp.mail.yahoo.com"
+    SMTP_PORT = 587
+    SMTP_USERNAME = "supp.quickbase@yahoo.com"
+    SMTP_PASSWORD = "quickbasemdp"
+    EMAIL_FROM = "supp.quickbase@yahoo.com"
+    EMAIL_TO = email
+    EMAIL_SUBJECT = "Attention:Subject here"
+
+   
     #Create SMTP session for sending the mail
     try : 
-        session = smtplib.SMTP('smtp.gmail.com', 587) #use gmail with port
-        session.starttls() #enable security
-        session.login(sender_address, sender_pass) #login with mail_id and password
-        text = message.as_string()
-        session.sendmail(sender_address, receiver_address, text)
-        session.quit()
+        s = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        s.starttls()
+        s.login(SMTP_USERNAME, SMTP_PASSWORD)
+        message = 'Subject: {}\n\n{}'.format(EMAIL_SUBJECT, EMAIL_MESSAGE)
+        s.sendmail(EMAIL_FROM, EMAIL_TO, message)
+        s.quit()
         return True
-    except:
+    except Exception as e:
+        print(e)
         return False
+
+# def sendCode(username,email,code):
+#     import smtplib
+#     from email.mime.multipart import MIMEMultipart
+#     from email.mime.text import MIMEText
+#     mail_content = '''
+#     Bonjour ''' +username + '''
+
+#     Nous avons reçu une demande non reconnue de connexion à votre compte depuis un nouvel emplacement en France.
+
+#     Si vous n'avez pas essayé de vous connecter à partir d'un nouvel emplacement en France tout à l'heure, vous devez changer votre mot de passe immédiatement. Veuillez revérifier l'URL pour vous assurer qu'il s'agit de quickbase-app.com et non d'un autre domaine se faisant passer pour QuickBase.
+
+#     Vous ne devez en aucun cas copier ou partager le code ci-dessous.
+
+#     Si vous venez de vous connecter depuis un nouvel emplacement en France, puis en utilisant l'appareil à partir duquel vous venez d'essayer de vous connecter, veuillez entrer le code ci-dessous pour vous connecter à votre compte QuickBase :
+#     ''' +str(code) + '''
+
+#     Merci de faire confiance à QuickBase.
+
+#     --------------------------
+#     QuickBase: https://quickbase-app.com
+#     '''
+#     #The mail addresses and password
+#     sender_address = 'supp.quickbase@yahoo.com'
+#     sender_pass = 'quickbasemdp'
+#     receiver_address = email
+#     #Setup the MIME
+#     message = MIMEMultipart()
+#     message['From'] = sender_address
+#     message['To'] = receiver_address
+#     message['Subject'] = 'Your QuickBase verification code'   #The subject line
+#     #The body and the attachments for the mail
+#     message.attach(MIMEText(mail_content, 'plain'))
+#     #Create SMTP session for sending the mail
+#     try : 
+#         session = smtplib.SMTP("smtp.mail.yahoo.com", 587) #use gmail with port
+#         session.starttls() #enable security
+#         session.login(sender_address, sender_pass) #login with mail_id and password
+#         text = message.as_string()
+#         session.sendmail(sender_address, receiver_address, text)
+#         session.quit()
+#         return True
+#     except Exception as e:
+#         print(e)
+#         return False

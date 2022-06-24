@@ -6,8 +6,8 @@
 {% block title %}
 <ul class="navbar-nav">
   <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
-    <h1 class="welcome-text">Bienvenue, <span class="text-black fw-bold">{{ user.username }}</span></h1>
-    <h3 class="welcome-sub-text">Aperçu des marché </h3>
+    <h1 class="welcome-text"><span class="text-black fw-bold">Prédiction</span> des marchés</h1>
+    <h3 class="welcome-sub-text">Estimations des prix de cryptomonnaie par nos modèles</h3>
   </li>
 </ul>
 {% endblock %}
@@ -29,7 +29,7 @@
           <div class="col-sm-12">
             <div class="home-tab"  id="princaplChart">
               <div class="d-sm-flex align-items-center justify-content-between border-bottom">
-                  <div class="btn-wrapper" @click="getPrices(idSelected,currencySelected,7,'daily')">
+                  <div class="btn-wrapper" @click="getPrices(idSelected,currencySelected,3000,'daily',30,'D')">
                       <select v-model="idSelected" @change="getCurrency(idSelected)"  class="btn btn-otline-dark align-items-center" name="nyc">
                         <option class="dropdown-item" v-for="coin in coins.coins" :key="coin.id" :value=coin.id> [[ coin.id ]] </option>
                       </select>
@@ -50,22 +50,21 @@
                         <div class="d-md-block" id="price">
                           <p class="statistics-title">Prix</p>
                           <h3 class="rate-percentage">[[ infos.price ]] [[ currencySelected ]]</h3>
-                          <p class="text-success d-flex "v-if="infos.prices_changes >= 0"><i class="mdi mdi-menu-up"></i><span>[[infos.prices_changes]]% (24h)</span></p>
-                          <p class="text-danger d-flex "v-if="infos.prices_changes < 0"><i class="mdi mdi-menu-down"></i><span>[[infos.prices_changes]]% (24h)</span></p>
+                          <p class="text-success d-flex "v-if="prices.tomorow_price >= infos.price"><i class="mdi mdi-menu-up"></i><span>[[prices.tomorow_price]] [[ currencySelected ]] (-24h)</span></p>
+                          <p class="text-danger d-flex "v-if="prices.tomorow_price < infos.price"><i class="mdi mdi-menu-down"></i><span>[[prices.tomorow_price]] [[ currencySelected ]] (-24h)</span></p>
+                          
                         </div>
                         <div class="d-md-block" id="rank">
                           <p class="statistics-title">Rang</p>
                           <h3 class="rate-percentage">#[[ infos.infos.market_data.market_cap_rank ]]</h3>
                         </div>
                         <div class="d-md-block" id="marketcap">
-                          <p class="statistics-title">MarketCap</p>
-                          <h3 class="rate-percentage">[[ infos.marketcap ]] [[ currencySelected ]]</h3>
-                          <p class="text-success d-flex "v-if="infos.prices_changes >= 0"><i class="mdi mdi-menu-up"></i><span>[[infos.market_changes]]% (24h)</span></p>
-                          <p class="text-danger d-flex "v-if="infos.prices_changes < 0"><i class="mdi mdi-menu-down"></i><span>[[infos.market_changes]]% (24h)</span></p>
+                          <p class="statistics-title">Prévisions maximal</p>
+                          <h3 class="rate-percentage">[[ prices.tomorow_upper ]] [[ currencySelected ]]</h3>
                         </div>
                         <div class="d-md-block" id="volume">
-                          <p class="statistics-title">Volume</p>
-                          <h3 class="rate-percentage">[[ infos.volume ]] [[ currencySelected ]]</h3>
+                          <p class="statistics-title">Prévision minimal</p>
+                          <h3 class="rate-percentage">[[ prices.tomorow_lower ]] [[ currencySelected ]]</h3>
                         </div>
                         
                       </div>
@@ -82,12 +81,9 @@
                                  <h4 class="card-title card-title-dash">[[ idSelected ]]/[[ currencySelected ]]</h4>
                                 </div>
                                 <div id="performance-line-legend"></div>
-                                <div @click="getPrices(idSelected,currencySelected,7,'daily')">
+                                <div @click="getPrices(idSelected,currencySelected,3000,'daily',30,'D')">
                                   <select class="btn btn-secondary" name="nyc">
-                                    <option> Journalier </option>
-                                  </select>
-                                  <select class="btn btn-secondary" name="nyc">
-                                    <option> 7 derniers jours</option>
+                                    <option> 30 prochains jours </option>
                                   </select>
                                 </div>
                               </div>
@@ -131,14 +127,14 @@ var balance = new Vue({
     },
   async mounted() {
     await this.getCoins()
-    await this.getPrices(this.idSelected,this.currencySelected,7,'daily')
+    await this.getPrices(this.idSelected,this.currencySelected,3000,'daily',30,'D')
     await this.getCurrency('bitcoin')
   },
   methods: {
-    getPrices: async function(id,vs_currency,days,interval){
+    getPrices: async function(id,vs_currency,days,interval,period,freq){
       await this.getCoinInfos(id,vs_currency)
       await axios
-        .get('/dashboard/api/get_market_history/'+id+'/'+vs_currency+'/'+days+'/'+interval)
+        .get('api/predictData/'+id+'/'+vs_currency+'/'+days+'/'+interval+'/'+period+'/'+freq)
         .then(response => (this.prices = response.data))
       await this.getPriceChart(this.prices)
     },
@@ -187,21 +183,35 @@ var balance = new Vue({
                     pointHoverRadius: [2, 2, 2, 2, 2,2, 2, 2, 2, 2,2, 2, 2],
                     pointBackgroundColor: ['#1F3BB3)', '#1F3BB3', '#1F3BB3', '#1F3BB3','#1F3BB3)', '#1F3BB3', '#1F3BB3', '#1F3BB3','#1F3BB3)', '#1F3BB3', '#1F3BB3', '#1F3BB3','#1F3BB3)'],
                     pointBorderColor: ['#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff',],
-                 }]//{
-              //     label: 'Volume',
-              //     data: [30, 150, 190, 250, 120, 150, 130, 20, 30, 15, 40, 95, 180],
-              //     backgroundColor: saleGradientBg2,
-              //     borderColor: [
-              //         '#52CDFF',
-              //     ],
-              //     borderWidth: 1.5,
-              //     fill: true, // 3: no fill
-              //     pointBorderWidth: 1,
-              //     pointRadius: [0, 0, 0, 4, 0],
-              //     pointHoverRadius: [0, 0, 0, 2, 0],
-              //     pointBackgroundColor: ['#52CDFF)', '#52CDFF', '#52CDFF', '#52CDFF','#52CDFF)', '#52CDFF', '#52CDFF', '#52CDFF','#52CDFF)', '#52CDFF', '#52CDFF', '#52CDFF','#52CDFF)'],
-              //       pointBorderColor: ['#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff',],
-              // }]
+                 },{
+                   label: 'Maximum',
+                   data: prices.upper,
+                   backgroundColor: saleGradientBg2,
+                   borderColor: [
+                       '#52CDFF',
+                   ],
+                   borderWidth: 1.5,
+                   fill: true, // 3: no fill
+                   pointBorderWidth: 1,
+                   pointRadius: [4, 4, 4, 4, 4,4, 4, 4, 4, 4,4, 4, 4],
+                    pointHoverRadius: [2, 2, 2, 2, 2,2, 2, 2, 2, 2,2, 2, 2],
+                   pointBackgroundColor: ['#52CDFF)', '#52CDFF', '#52CDFF', '#52CDFF','#52CDFF)', '#52CDFF', '#52CDFF', '#52CDFF','#52CDFF)', '#52CDFF', '#52CDFF', '#52CDFF','#52CDFF)'],
+                     pointBorderColor: ['#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff',],
+               },{
+                   label: 'Minimum',
+                   data: prices.lower,
+                   backgroundColor: saleGradientBg2,
+                   borderColor: [
+                       '#FF33E0',
+                   ],
+                   borderWidth: 1.5,
+                   fill: true, // 3: no fill
+                   pointBorderWidth: 1,
+                   pointRadius: [4, 4, 4, 4, 4,4, 4, 4, 4, 4,4, 4, 4],
+                    pointHoverRadius: [2, 2, 2, 2, 2,2, 2, 2, 2, 2,2, 2, 2],
+                   pointBackgroundColor: ['#52CDFF)', '#52CDFF', '#52CDFF', '#52CDFF','#52CDFF)', '#52CDFF', '#52CDFF', '#52CDFF','#52CDFF)', '#52CDFF', '#52CDFF', '#52CDFF','#52CDFF)'],
+                     pointBorderColor: ['#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff','#fff',],
+               }]
             };
         
             var salesTopOptions = {

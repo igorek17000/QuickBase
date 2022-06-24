@@ -112,6 +112,7 @@ def get_FTX_historical_balance_usd(request,resp):
     yest = date.today()  - timedelta(days = 1)
     timeSt= timeSt = time.mktime(datetime.strptime(str(yest), "%Y-%m-%d").timetuple())
     counter=0
+    print(resp)
     for i in resp['results']:
         market = str(i['ticker']) + '/USD'
         markets = account.get_historical_prices(market=market,end_time=timeSt,start_time=timeSt)
@@ -205,5 +206,5 @@ def get_vs_currency(request,id):
 def get_coin_infos(request,id, vs_currency):
     cg = CoinGeckoAPI()
     req=cg.get_coin_by_id(id)
-    return JsonResponse({'infos':req,'vs_currency':req['market_data']['current_price'][vs_currency]})
+    return JsonResponse({'infos':req,'price':req['market_data']['current_price'][vs_currency],'marketcap':req['market_data']['market_cap'][vs_currency],'volume':req['market_data']['total_volume'][vs_currency],'prices_changes':req['market_data']['price_change_percentage_24h'],'market_changes':req['market_data']['market_cap_change_percentage_24h']})
 
